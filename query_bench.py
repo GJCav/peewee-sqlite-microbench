@@ -213,7 +213,8 @@ def bench_qry():
 
     opt_list = [
         QryOption(bench_id=bench_id,
-                  qry_count=n)
+                  qry_count=n,
+                  wal=True)
         for n in [
             100, 1000, 2000, 4000, 8000, 10000,
             11000, 12000, 13000, 14000
@@ -221,7 +222,7 @@ def bench_qry():
     ]
 
     bench(
-        "Result Query", funcs, opt_list,
+        "Result Query (WAL)", funcs, opt_list,
         timeout=5, repeat=5, hint=lambda x: f"qry_count = {x.qry_count}"
     )
 

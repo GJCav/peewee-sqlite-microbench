@@ -313,10 +313,19 @@ def time_rst_inst_sql(opt = InstOption()):
     ON s1.id < s2.id;
     """
     db.open(test_db_path)
-    st = datetime.now()
+
+    import time
+    # st = datetime.now()
+    st = time.perf_counter()
     db.conn.execute_sql(SQL)
     count = db.Result.select(db.Result.a).count()
-    elapsed = datetime.now() - st
+    # elapsed = datetime.now() - st
+    elapsed = timedelta(seconds=time.perf_counter() - st)
+    class Elapsed:
+        def __init__(self, elapsed):
+            self.elapsed = elapsed
+        def total_seconds(self):
+            return self.elapsed
     db.close()
     print(f"Inserted {count} results in {elapsed}")
 
@@ -335,10 +344,13 @@ def time_rst_inst_sql_wal(opt = InstOption()):
     ON s1.id < s2.id;
     """
     db.open(test_db_path, wal=True)
-    st = datetime.now()
+    import time
+    # st = datetime.now()
+    st = time.perf_counter()
     db.conn.execute_sql(SQL)
     count = db.Result.select(db.Result.a).count()
-    elapsed = datetime.now() - st
+    # elapsed = datetime.now() - st
+    elapsed = timedelta(seconds=time.perf_counter() - st)
     db.close()
     print(f"Inserted {count} results in {elapsed}")
 
@@ -364,7 +376,7 @@ def bench_sample_inst():
         for n in range(2, 6)
     ]
 
-    bench("Sample Insertion BLKJSON", funcs, opt_list, timeout=3, repeat=1)
+    bench("Sample Insertion", funcs, opt_list, timeout=3, repeat=5)
 
 
 def bench_rst_inst_slow():
@@ -379,7 +391,7 @@ def bench_rst_inst_slow():
         for n in range(10, 101, 20)
     ]
 
-    bench("Result Insertion Slow", funcs, opt_list, timeout=3, repeat=1)
+    bench("Result Insertion Slow", funcs, opt_list, timeout=3, repeat=5)
 
 
 def bench_rst_inst_fast():
@@ -395,24 +407,26 @@ def bench_rst_inst_fast():
         for n in range(100, 1001, 50)
     ]
 
-    bench("Result Insertion Fast", funcs, opt_list, timeout=3, repeat=1)
+    bench("Result Insertion Fast", funcs, opt_list, timeout=3, repeat=5)
 
 
 def bench_rst_inst_sql():
     funcs = [
-        time_rst_gen,
+        # time_rst_gen,
         time_rst_inst_sql,
         time_rst_inst_sql_wal
     ]
 
     opt_list = [
-        InstOption(sample_count=n * 100)
+        InstOption(
+            sample_count=n * 100,
+            # test_db_path=":memory:",
+        )
         for n in range(1, 14)
     ]
 
-    bench("Result Insertion SQL", funcs, opt_list, timeout=10, repeat=1)
+    bench("Result Insertion SQL", funcs, opt_list, timeout=10, repeat=5)
 
 
 if __name__ == "__main__":
-    bench_rst_inst_fast()
-    # bench_sample_inst()
+    bench_rst_inst_sql()
